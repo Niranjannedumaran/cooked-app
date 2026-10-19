@@ -11,9 +11,12 @@ export default async function handler(request: any, response: any) {
   if (!emailPattern.test(email)) return response.status(400).json({ error: 'Enter a valid email address.' })
 
   const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.WAITLIST_FROM_EMAIL
+  // Resend permits its test sender only when the notification is delivered to
+  // the account owner's verified email address. Use a verified domain sender
+  // later by setting WAITLIST_FROM_EMAIL in Vercel.
+  const from = process.env.WAITLIST_FROM_EMAIL || 'onboarding@resend.dev'
   const recipient = process.env.WAITLIST_RECIPIENT || 'niranjanpersonal1@gmail.com'
-  if (!apiKey || !from) return response.status(503).json({ error: 'Waitlist signup is temporarily unavailable.' })
+  if (!apiKey) return response.status(503).json({ error: 'Waitlist signup is temporarily unavailable.' })
 
   const resendResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
